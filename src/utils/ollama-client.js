@@ -18,7 +18,7 @@ class OllamaClient {
     this.timeout = config.timeout || ollamaConfig.timeout;
     this.retries = config.retries || ollamaConfig.retries;
     this.retryDelay = config.retryDelay || ollamaConfig.retryDelay;
-    
+
     // Khởi tạo axios client
     this.client = axios.create({
       baseURL: this.baseUrl,
@@ -28,7 +28,7 @@ class OllamaClient {
       }
     });
   }
-  
+
   /**
    * Gửi yêu cầu tạo văn bản đến Ollama API
    * @param {string} prompt - Prompt đầu vào
@@ -43,30 +43,40 @@ class OllamaClient {
       model,
       prompt
     };
-    
+
     let attempts = 0;
     let lastError = null;
-    
+
     while (attempts < this.retries) {
       try {
         logger.debug(`Gửi yêu cầu đến Ollama API (model: ${model})`);
+        logger.debug(`Request URL: ${this.baseUrl}/api/generate`);
+        try {
+          logger.debug(`Request params:`, JSON.stringify(params, null, 2));
+        } catch (e) {
+          logger.debug(`Request params (stringify failed):`, params);
+        }
         const response = await this.client.post('/api/generate', params);
         return response.data.response;
       } catch (error) {
         lastError = error;
         logger.error(`Lỗi khi gọi Ollama API (lần thử ${attempts + 1}/${this.retries}):`, error.message);
+        if (error.response) {
+          logger.error(`Response status: ${error.response.status}`);
+          logger.error(`Response data:`, error.response.data);
+        }
         attempts++;
-        
+
         if (attempts < this.retries) {
           logger.debug(`Đợi ${this.retryDelay}ms trước khi thử lại...`);
           await delay(this.retryDelay);
         }
       }
     }
-    
+
     throw new Error(`Không thể kết nối đến Ollama API sau ${this.retries} lần thử: ${lastError.message}`);
   }
-  
+
   /**
    * Gửi yêu cầu chat đến Ollama API
    * @param {Array<object>} messages - Mảng các tin nhắn (format: [{role: 'user', content: 'Hello'}, ...])
@@ -81,30 +91,40 @@ class OllamaClient {
       model,
       messages
     };
-    
+
     let attempts = 0;
     let lastError = null;
-    
+
     while (attempts < this.retries) {
       try {
         logger.debug(`Gửi yêu cầu chat đến Ollama API (model: ${model})`);
+        logger.debug(`Request URL: ${this.baseUrl}/api/chat`);
+        try {
+          logger.debug(`Request params:`, JSON.stringify(params, null, 2));
+        } catch (e) {
+          logger.debug(`Request params (stringify failed):`, params);
+        }
         const response = await this.client.post('/api/chat', params);
         return response.data.message.content;
       } catch (error) {
         lastError = error;
         logger.error(`Lỗi khi gọi Ollama API chat (lần thử ${attempts + 1}/${this.retries}):`, error.message);
+        if (error.response) {
+          logger.error(`Response status: ${error.response.status}`);
+          logger.error(`Response data:`, error.response.data);
+        }
         attempts++;
-        
+
         if (attempts < this.retries) {
           logger.debug(`Đợi ${this.retryDelay}ms trước khi thử lại...`);
           await delay(this.retryDelay);
         }
       }
     }
-    
+
     throw new Error(`Không thể kết nối đến Ollama API chat sau ${this.retries} lần thử: ${lastError.message}`);
   }
-  
+
   /**
    * Gửi yêu cầu chat đến Ollama API với streaming
    * @param {Array<object>} messages - Mảng các tin nhắn (format: [{role: 'user', content: 'Hello'}, ...])
@@ -121,31 +141,37 @@ class OllamaClient {
       messages,
       stream: true
     };
-    
+
     let attempts = 0;
     let lastError = null;
     let fullResponse = '';
-    
+
     while (attempts < this.retries) {
       try {
         logger.debug(`Gửi yêu cầu chat stream đến Ollama API (model: ${model})`);
-        
+        logger.debug(`Request URL: ${this.baseUrl}/api/chat`);
+        try {
+          logger.debug(`Request params:`, JSON.stringify(params, null, 2));
+        } catch (e) {
+          logger.debug(`Request params (stringify failed):`, params);
+        }
+
         const response = await this.client({
           method: 'post',
           url: '/api/chat',
           data: params,
           responseType: 'stream'
         });
-        
+
         return new Promise((resolve, reject) => {
           response.data.on('data', (chunk) => {
             try {
               const lines = chunk.toString().split('\n').filter(line => line.trim() !== '');
-              
+
               for (const line of lines) {
                 try {
                   const data = JSON.parse(line);
-                  
+
                   if (data.message && data.message.content) {
                     const content = data.message.content;
                     fullResponse += content;
@@ -159,11 +185,11 @@ class OllamaClient {
               logger.error('Lỗi khi xử lý stream:', streamError.message);
             }
           });
-          
+
           response.data.on('end', () => {
             resolve(fullResponse);
           });
-          
+
           response.data.on('error', (err) => {
             reject(err);
           });
@@ -171,18 +197,22 @@ class OllamaClient {
       } catch (error) {
         lastError = error;
         logger.error(`Lỗi khi gọi Ollama API chat stream (lần thử ${attempts + 1}/${this.retries}):`, error.message);
+        if (error.response) {
+          logger.error(`Response status: ${error.response.status}`);
+          logger.error(`Response data:`, error.response.data);
+        }
         attempts++;
-        
+
         if (attempts < this.retries) {
           logger.debug(`Đợi ${this.retryDelay}ms trước khi thử lại...`);
           await delay(this.retryDelay);
         }
       }
     }
-    
+
     throw new Error(`Không thể kết nối đến Ollama API chat stream sau ${this.retries} lần thử: ${lastError.message}`);
   }
-  
+
   /**
    * Kiểm tra xem mô hình có sẵn không
    * @param {string} model - Tên mô hình cần kiểm tra
@@ -198,7 +228,7 @@ class OllamaClient {
       return false;
     }
   }
-  
+
   /**
    * Tải mô hình nếu chưa có sẵn
    * @param {string} model - Tên mô hình cần tải
@@ -206,20 +236,35 @@ class OllamaClient {
    */
   async ensureModelAvailable(model = this.defaultModel) {
     const isAvailable = await this.isModelAvailable(model);
-    
+
     if (isAvailable) {
       logger.info(`Mô hình ${model} đã có sẵn`);
       return true;
     }
-    
+
     logger.info(`Mô hình ${model} chưa có sẵn, đang tải...`);
-    
+
     try {
       await this.client.post('/api/pull', { name: model });
       logger.info(`Đã tải mô hình ${model} thành công`);
       return true;
     } catch (error) {
       logger.error(`Lỗi khi tải mô hình ${model}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Test kết nối với Ollama server
+   * @returns {Promise<boolean>} - true nếu kết nối thành công
+   */
+  async testConnection() {
+    try {
+      await this.client.get('/api/tags');
+      logger.info('Kết nối đến Ollama server thành công');
+      return true;
+    } catch (error) {
+      logger.error('Không thể kết nối đến Ollama server:', error.message);
       return false;
     }
   }

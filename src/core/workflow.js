@@ -84,9 +84,9 @@ class WorkflowManager {
       const handleStreamChunk = (chunk, role, projectId) => {
         // Gửi từng phần của phản hồi qua Socket.IO
         io.to(projectId).emit('agent_response_chunk', {
-          role,
-          content: chunk,
-          projectId,
+          agent: role,
+          chunk: chunk,
+          projectId: projectId,
           timestamp: Date.now(),
           workflowId: workflow.id,
           stepName: workflow.steps[workflow.steps.length - 1].name
@@ -99,8 +99,8 @@ class WorkflowManager {
       
       // Thông báo bắt đầu phản hồi từ BA
       io.to(projectId).emit('agent_response_start', {
-        role: 'ba',
-        projectId,
+        agent: 'ba',
+        projectId: projectId,
         workflowId: workflow.id,
         stepName: 'ba_analysis'
       });
@@ -111,10 +111,11 @@ class WorkflowManager {
       
       // Thông báo kết thúc phản hồi từ BA
       io.to(projectId).emit('agent_response_end', {
-        role: 'ba',
-        projectId,
+        agent: 'ba',
+        projectId: projectId,
         workflowId: workflow.id,
-        stepName: 'ba_analysis'
+        stepName: 'ba_analysis',
+        messageId: memory.getConversation(projectId).slice(-1)[0]?.id
       });
       
       // Kiểm tra xem có cần tìm kiếm thông tin bổ sung không
@@ -144,8 +145,8 @@ class WorkflowManager {
         
         // Thông báo bắt đầu phản hồi từ BA với kết quả tìm kiếm
         io.to(projectId).emit('agent_response_start', {
-          role: 'ba',
-          projectId,
+          agent: 'ba',
+          projectId: projectId,
           workflowId: workflow.id,
           stepName: 'ba_analysis_with_search'
         });
@@ -159,10 +160,11 @@ class WorkflowManager {
         
         // Thông báo kết thúc phản hồi từ BA với kết quả tìm kiếm
         io.to(projectId).emit('agent_response_end', {
-          role: 'ba',
-          projectId,
+          agent: 'ba',
+          projectId: projectId,
           workflowId: workflow.id,
-          stepName: 'ba_analysis_with_search'
+          stepName: 'ba_analysis_with_search',
+          messageId: memory.getConversation(projectId).slice(-1)[0]?.id
         });
       }
       
@@ -175,8 +177,8 @@ class WorkflowManager {
       
       // Thông báo bắt đầu phản hồi từ Dev
       io.to(projectId).emit('agent_response_start', {
-        role: 'dev',
-        projectId,
+        agent: 'dev',
+        projectId: projectId,
         workflowId: workflow.id,
         stepName: 'dev_implementation'
       });
@@ -190,10 +192,11 @@ class WorkflowManager {
       
       // Thông báo kết thúc phản hồi từ Dev
       io.to(projectId).emit('agent_response_end', {
-        role: 'dev',
-        projectId,
+        agent: 'dev',
+        projectId: projectId,
         workflowId: workflow.id,
-        stepName: 'dev_implementation'
+        stepName: 'dev_implementation',
+        messageId: memory.getConversation(projectId).slice(-1)[0]?.id
       });
       
       // Bước 3: Gửi code của Dev đến Tester
@@ -202,8 +205,8 @@ class WorkflowManager {
       
       // Thông báo bắt đầu phản hồi từ Tester
       io.to(projectId).emit('agent_response_start', {
-        role: 'tester',
-        projectId,
+        agent: 'tester',
+        projectId: projectId,
         workflowId: workflow.id,
         stepName: 'tester_verification'
       });
@@ -217,10 +220,11 @@ class WorkflowManager {
       
       // Thông báo kết thúc phản hồi từ Tester
       io.to(projectId).emit('agent_response_end', {
-        role: 'tester',
-        projectId,
+        agent: 'tester',
+        projectId: projectId,
         workflowId: workflow.id,
-        stepName: 'tester_verification'
+        stepName: 'tester_verification',
+        messageId: memory.getConversation(projectId).slice(-1)[0]?.id
       });
       
       // Bước 4: Nếu Tester phát hiện vấn đề, gửi lại cho Dev để sửa
@@ -230,8 +234,8 @@ class WorkflowManager {
         
         // Thông báo bắt đầu phản hồi từ Dev (sửa lỗi)
         io.to(projectId).emit('agent_response_start', {
-          role: 'dev',
-          projectId,
+          agent: 'dev',
+          projectId: projectId,
           workflowId: workflow.id,
           stepName: 'dev_revision'
         });
@@ -245,10 +249,11 @@ class WorkflowManager {
         
         // Thông báo kết thúc phản hồi từ Dev (sửa lỗi)
         io.to(projectId).emit('agent_response_end', {
-          role: 'dev',
-          projectId,
+          agent: 'dev',
+          projectId: projectId,
           workflowId: workflow.id,
-          stepName: 'dev_revision'
+          stepName: 'dev_revision',
+          messageId: memory.getConversation(projectId).slice(-1)[0]?.id
         });
         
         // Gửi code đã sửa cho Tester kiểm tra lại
@@ -257,8 +262,8 @@ class WorkflowManager {
         
         // Thông báo bắt đầu phản hồi từ Tester (kiểm tra lại)
         io.to(projectId).emit('agent_response_start', {
-          role: 'tester',
-          projectId,
+          agent: 'tester',
+          projectId: projectId,
           workflowId: workflow.id,
           stepName: 'tester_final_verification'
         });
@@ -272,10 +277,11 @@ class WorkflowManager {
         
         // Thông báo kết thúc phản hồi từ Tester (kiểm tra lại)
         io.to(projectId).emit('agent_response_end', {
-          role: 'tester',
-          projectId,
+          agent: 'tester',
+          projectId: projectId,
           workflowId: workflow.id,
-          stepName: 'tester_final_verification'
+          stepName: 'tester_final_verification',
+          messageId: memory.getConversation(projectId).slice(-1)[0]?.id
         });
       }
       

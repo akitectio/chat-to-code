@@ -14,14 +14,13 @@ module.exports = {
   
   // Cấu hình logging
   logging: {
-    level: process.env.LOG_LEVEL || 'info',
+    level: process.env.LOG_LEVEL || 'debug',
     directory: path.join(process.cwd(), 'logs')
   },
-  
-  // Cấu hình Ollama
+   // Cấu hình Ollama
   ollama: {
     baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    defaultModel: process.env.OLLAMA_DEFAULT_MODEL || 'phi3:mini',
+    defaultModel: process.env.OLLAMA_DEFAULT_MODEL || 'llama3.2:1b',
     defaultParams: {
       temperature: 0.7,
       top_p: 0.9,
@@ -30,29 +29,29 @@ module.exports = {
       max_tokens: 2000
     },
     agentModels: {
-      ba: process.env.OLLAMA_BA_MODEL || 'phi3:mini',
-      dev: process.env.OLLAMA_DEV_MODEL || 'phi3:mini',
-      tester: process.env.OLLAMA_TESTER_MODEL || 'phi3:mini'
+      ba: process.env.OLLAMA_BA_MODEL || 'llama3.2:1b',
+      dev: process.env.OLLAMA_DEV_MODEL || 'llama3.2:1b',
+      tester: process.env.OLLAMA_TESTER_MODEL || 'llama3.2:1b'
     },
     timeout: 60000, // 60 giây
     retries: 3,
     retryDelay: 1000 // 1 giây
   },
-  
+
   // Cấu hình agent
   agents: {
     ba: {
-      model: process.env.OLLAMA_BA_MODEL || 'phi3:mini',
+      model: process.env.OLLAMA_BA_MODEL || 'llama3.2:1b',
       temperature: 0.7,
       systemPrompt: prompts.ba.systemPrompt
     },
     dev: {
-      model: process.env.OLLAMA_DEV_MODEL || 'phi3:mini',
+      model: process.env.OLLAMA_DEV_MODEL || 'llama3.2:1b',
       temperature: 0.5,
       systemPrompt: prompts.dev.systemPrompt
     },
     tester: {
-      model: process.env.OLLAMA_TESTER_MODEL || 'phi3:mini',
+      model: process.env.OLLAMA_TESTER_MODEL || 'llama3.2:1b',
       temperature: 0.3,
       systemPrompt: prompts.tester.systemPrompt
     }
