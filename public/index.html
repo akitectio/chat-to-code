@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat-to-Code</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Chat-to-Code</h1>
+        <button id="new-project-btn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> New Project
+        </button>
+      </div>
+      
+      <div class="projects-list">
+        <h2>Projects</h2>
+        <ul id="projects"></ul>
+      </div>
+    </aside>
+    
+    <main class="main-content">
+      <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-content">
+          <h1>Welcome to Chat-to-Code</h1>
+          <p>An intelligent chat system that helps you develop software quickly and efficiently.</p>
+          <p>Create a new project or select an existing one to get started.</p>
+          <button id="welcome-new-project-btn" class="btn btn-primary btn-large">
+            <i class="fas fa-plus"></i> Create New Project
+          </button>
+        </div>
+      </div>
+      
+      <div class="chat-container" id="chat-container" style="display: none;">
+        <div class="chat-header">
+          <h2 id="project-title">Project Name</h2>
+          <div class="project-info">
+            <span id="project-id"></span>
+            <span id="project-status">Active</span>
+          </div>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages"></div>
+        
+        <div class="chat-input">
+          <textarea id="message-input" placeholder="Enter your requirements..."></textarea>
+          <button id="send-message-btn" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </main>
+    
+    <aside class="info-panel" id="info-panel" style="display: none;">
+      <div class="info-header">
+        <h2>Project Information</h2>
+        <button id="close-info-btn" class="btn btn-icon">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="info-content">
+        <div class="info-section">
+          <h3>Details</h3>
+          <p id="project-description">Project description</p>
+          <p><strong>Created:</strong> <span id="project-created-at"></span></p>
+          <p><strong>Updated:</strong> <span id="project-updated-at"></span></p>
+        </div>
+        
+        <div class="info-section">
+          <h3>Tasks</h3>
+          <ul id="project-tasks" class="tasks-list"></ul>
+        </div>
+        
+        <div class="info-section">
+          <h3>Tests</h3>
+          <ul id="project-tests" class="tests-list"></ul>
+        </div>
+        
+        <div class="info-section">
+          <h3>Artifacts</h3>
+          <div class="artifacts-tabs">
+            <button class="tab-btn active" data-type="code">Code</button>
+            <button class="tab-btn" data-type="requirement">Requirements</button>
+            <button class="tab-btn" data-type="test_plan">Test Plan</button>
+            <button class="tab-btn" data-type="test_result">Test Results</button>
+          </div>
+          <ul id="project-artifacts" class="artifacts-list"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <!-- Modal tạo dự án mới -->
+  <div class="modal" id="new-project-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create New Project</h2>
+        <button id="close-modal-btn" class="btn btn-icon">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="new-project-form">
+          <div class="form-group">
+            <label for="project-name">Project Name</label>
+            <input type="text" id="project-name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-desc">Description</label>
+            <textarea id="project-desc" rows="4"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" id="cancel-project-btn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal xem artifact -->
+  <div class="modal" id="artifact-modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 id="artifact-title">Artifact</h2>
+        <button id="close-artifact-modal-btn" class="btn btn-icon">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <pre id="artifact-content"></pre>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.2.12/marked.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
